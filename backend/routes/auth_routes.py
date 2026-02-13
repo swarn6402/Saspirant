@@ -1,7 +1,7 @@
 import re
 from datetime import date, datetime
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
 from models import User, db
@@ -95,9 +95,11 @@ def register_user():
         return jsonify({"message": "User registered successfully", "user_id": user.id}), 201
     except SQLAlchemyError:
         db.session.rollback()
+        current_app.logger.exception("Database error during user registration.")
         return jsonify({"error": "Database error while registering user"}), 500
     except Exception:
         db.session.rollback()
+        current_app.logger.exception("Unexpected error during user registration.")
         return jsonify({"error": "Unexpected error while registering user"}), 500
 
 
@@ -109,8 +111,10 @@ def get_user(user_id):
             return jsonify({"error": "User not found"}), 404
         return jsonify(format_user_response(user)), 200
     except SQLAlchemyError:
+        current_app.logger.exception("Database error while fetching user.")
         return jsonify({"error": "Database error while fetching user"}), 500
     except Exception:
+        current_app.logger.exception("Unexpected error while fetching user.")
         return jsonify({"error": "Unexpected error while fetching user"}), 500
 
 
@@ -155,7 +159,9 @@ def update_user(user_id):
         return jsonify(format_user_response(user)), 200
     except SQLAlchemyError:
         db.session.rollback()
+        current_app.logger.exception("Database error while updating user.")
         return jsonify({"error": "Database error while updating user"}), 500
     except Exception:
         db.session.rollback()
+        current_app.logger.exception("Unexpected error while updating user.")
         return jsonify({"error": "Unexpected error while updating user"}), 500

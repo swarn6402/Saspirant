@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 
 import requests
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
 from models import MonitoredURL, User, UserPreference, db
@@ -154,9 +154,11 @@ def create_or_update_preferences(user_id):
         )
     except SQLAlchemyError:
         db.session.rollback()
+        current_app.logger.exception("Database error while saving preferences.")
         return jsonify({"error": "Database error while saving preferences"}), 500
     except Exception:
         db.session.rollback()
+        current_app.logger.exception("Unexpected error while saving preferences.")
         return jsonify({"error": "Unexpected error while saving preferences"}), 500
 
 
@@ -172,8 +174,10 @@ def get_preferences(user_id):
         )
         return jsonify(_format_preference_response(preferences)), 200
     except SQLAlchemyError:
+        current_app.logger.exception("Database error while fetching preferences.")
         return jsonify({"error": "Database error while fetching preferences"}), 500
     except Exception:
+        current_app.logger.exception("Unexpected error while fetching preferences.")
         return jsonify({"error": "Unexpected error while fetching preferences"}), 500
 
 
@@ -220,9 +224,11 @@ def add_monitored_url(user_id):
         )
     except SQLAlchemyError:
         db.session.rollback()
+        current_app.logger.exception("Database error while adding monitored URL.")
         return jsonify({"error": "Database error while adding URL"}), 500
     except Exception:
         db.session.rollback()
+        current_app.logger.exception("Unexpected error while adding monitored URL.")
         return jsonify({"error": "Unexpected error while adding URL"}), 500
 
 
@@ -236,8 +242,10 @@ def get_monitored_urls(user_id):
         urls = MonitoredURL.query.filter_by(user_id=user_id).order_by(MonitoredURL.id.asc()).all()
         return jsonify({"urls": [_format_url_response(item) for item in urls]}), 200
     except SQLAlchemyError:
+        current_app.logger.exception("Database error while fetching monitored URLs.")
         return jsonify({"error": "Database error while fetching URLs"}), 500
     except Exception:
+        current_app.logger.exception("Unexpected error while fetching monitored URLs.")
         return jsonify({"error": "Unexpected error while fetching URLs"}), 500
 
 
@@ -257,7 +265,9 @@ def delete_monitored_url(user_id, url_id):
         return jsonify({"message": "URL removed"}), 200
     except SQLAlchemyError:
         db.session.rollback()
+        current_app.logger.exception("Database error while deleting monitored URL.")
         return jsonify({"error": "Database error while deleting URL"}), 500
     except Exception:
         db.session.rollback()
+        current_app.logger.exception("Unexpected error while deleting monitored URL.")
         return jsonify({"error": "Unexpected error while deleting URL"}), 500

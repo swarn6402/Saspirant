@@ -29,20 +29,9 @@ def create_app():
                 url = request.url.replace("http://", "https://", 1)
                 return redirect(url, code=301)
 
-    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
-    CORS(
-        app,
-        resources={
-            r"/api/*": {
-                "origins": [frontend_url, "https://saspirant-frontend.onrender.com"],
-                "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"],
-                "allow_headers": ["Content-Type"],
-            }
-        },
-    )
-
     db.init_app(app)
     register_blueprints(app)
+    apply_cors(app)
     register_error_handlers(app)
     register_cli_commands(app)
     configure_logging(app)
@@ -80,6 +69,19 @@ def create_app():
         except Exception as e:
             return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
+    @app.route("/api/routes", methods=["GET"])
+    def list_routes():
+        routes = []
+        for rule in app.url_map.iter_rules():
+            routes.append(
+                {
+                    "endpoint": rule.endpoint,
+                    "methods": sorted(list(rule.methods)),
+                    "path": str(rule),
+                }
+            )
+        return jsonify(routes), 200
+
     return app
 
 
@@ -100,7 +102,31 @@ def init_database(seed_sample: bool = False):
 def register_blueprints(app: Flask):
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(preference_bp, url_prefix="/api/preferences")
-    app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
+    app.register_blueprint(dashboard_bp)
+
+
+def apply_cors(app: Flask):
+    # Apply CORS after all blueprints are registered.
+    CORS(
+        app,
+        resources={r"/*": {"origins": "*"}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization", "X-User-Id"],
+        methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    )
+
+    @app.after_request
+    def after_request(response):
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add(
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization,X-User-Id",
+        )
+        response.headers.add(
+            "Access-Control-Allow-Methods",
+            "GET,PUT,POST,DELETE,PATCH,OPTIONS",
+        )
+        return response
 
 
 def register_error_handlers(app: Flask):
