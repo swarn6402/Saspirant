@@ -18,12 +18,69 @@ class GenericScraper(BaseScraper):
         self.category = self.config.get("exam_category", "General")
         self._seen_keys: set[str] = set()
 
+    def detect_exam_category(self, title: str, url: str) -> str:
+        """
+        Detect exam category from notification title and URL.
+        """
+        title_lower = (title or "").lower()
+        url_lower = (url or "").lower()
+
+        university_keywords = [
+            "semester",
+            "exam",
+            "result",
+            "enrollment",
+            "backlog",
+            "supplementary",
+            "grade",
+            "academic",
+            "course",
+            "admission",
+            "b.tech",
+            "m.tech",
+            "bca",
+            "mca",
+            "bba",
+            "mba",
+            "b.sc",
+            "m.sc",
+        ]
+        medical_keywords = [
+            "neet",
+            "aiims",
+            "mbbs",
+            "md",
+            "ms",
+            "medical",
+            "nursing",
+            "pharmacy",
+            "dental",
+            "bds",
+            "ayush",
+        ]
+        engineering_keywords = ["gate", "ese", "engineering", "iit", "nit"]
+
+        if "upsc" in url_lower or "upsc" in title_lower:
+            return "UPSC"
+        if "ssc" in url_lower or "ssc" in title_lower:
+            return "SSC"
+        if any(keyword in title_lower for keyword in medical_keywords):
+            return "Medical"
+        if any(keyword in title_lower for keyword in engineering_keywords):
+            return "Engineering"
+        if any(keyword in title_lower for keyword in university_keywords):
+            return "University"
+        if ".ac.in" in url_lower or ".edu" in url_lower or "makaut" in url_lower:
+            return "University"
+        return "General"
+
     def parse_notification(self, html_element: Tag) -> dict[str, Any]:
         link = html_element.find("a", href=True) if html_element.name != "a" else html_element
         href = urljoin(self.url, link["href"]) if link else None
         title = self.clean_text(link.get_text(" ", strip=True)) if link else ""
         content = self.clean_text(html_element.get_text(" ", strip=True))
         details = self.extract_job_details(content)
+        detected_category = self.detect_exam_category(title, href or self.url)
 
         parsed_date = None
         for chunk in html_element.stripped_strings:
@@ -39,7 +96,7 @@ class GenericScraper(BaseScraper):
             "last_date_to_apply": details["last_date_to_apply"],
             "age_limit": details["age_limit"] or "Not specified",
             "qualification_required": details["qualification_required"] or "Not specified",
-            "exam_category": self.category,
+            "exam_category": detected_category if self.category == "General" else self.category,
             "full_details": content or "Not specified",
             "pdf_url": href if href and ".pdf" in href.lower() else None,
         }
