@@ -188,7 +188,7 @@ function validateForm() {
 
 async function loadUserInfo() {
   try {
-    const response = await fetch(`/api/auth/user/${userId}`);
+    const response = await fetch(`${API_BASE_URL}/api/auth/user/${userId}`);
     if (!response.ok) return;
     const data = await response.json();
     const name = data.name || "Aspirant";
@@ -200,7 +200,7 @@ async function loadUserInfo() {
 
 async function loadPreferences(id) {
   try {
-    const response = await fetch(`/api/preferences/${id}`);
+    const response = await fetch(`${API_BASE_URL}/api/preferences/${id}`);
     if (!response.ok) return;
     const data = await response.json();
     selectExamCategories(data.exam_categories || []);
@@ -213,7 +213,7 @@ async function loadPreferences(id) {
 
 async function loadMonitoredUrls(id) {
   try {
-    const response = await fetch(`/api/preferences/${id}/urls`);
+    const response = await fetch(`${API_BASE_URL}/api/preferences/${id}/urls`);
     if (!response.ok) return;
     const data = await response.json();
     monitoredUrls = (data.urls || []).map((x) => ({
@@ -267,7 +267,7 @@ async function addUrl() {
   }
 
   try {
-    const response = await fetch(`/api/preferences/${userId}/urls`, {
+    const response = await fetch(`${API_BASE_URL}/api/preferences/${userId}/urls`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -301,7 +301,7 @@ async function addUrl() {
 
 async function removeUrl(urlId) {
   try {
-    const response = await fetch(`/api/preferences/${userId}/urls/${urlId}`, { method: "DELETE" });
+    const response = await fetch(`${API_BASE_URL}/api/preferences/${userId}/urls/${urlId}`, { method: "DELETE" });
     const data = await response.json();
     if (!response.ok) {
       showToast(data.error || "Failed to remove URL.");
@@ -318,7 +318,7 @@ async function removeUrl(urlId) {
 async function testScrape(urlId) {
   showToast("Testing scrape...", "success");
   try {
-    const response = await fetch(`/api/dashboard/${userId}/trigger-scrape/${urlId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/${userId}/trigger-scrape/${urlId}`, {
       method: "POST",
       headers: { "X-User-Id": String(userId) },
     });
@@ -383,7 +383,7 @@ async function savePreferences(id) {
   };
 
   try {
-    const response = await fetch(`/api/preferences/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/preferences/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -399,7 +399,7 @@ async function savePreferences(id) {
     saveMessage.classList.add("text-emerald-600");
     localStorage.removeItem(`preferences_draft_${id}`);
     setTimeout(() => {
-      window.location.href = `/dashboard?user_id=${id}`;
+      window.location.href = `/templates/dashboard.html?user_id=${id}`;
     }, 1500);
   } catch (error) {
     showToast("Failed to save preferences.");
