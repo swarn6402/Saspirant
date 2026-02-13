@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: saspirant-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn app:app
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        sync: false
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+  - type: web
+    name: saspirant-frontend
+    env: static
+    buildCommand: echo "No build needed"
+    staticPublishPath: ./frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
