@@ -11,6 +11,7 @@ from models import User, db
 from routes.auth_routes import auth_bp
 from routes.dashboard_routes import dashboard_bp
 from routes.preference_routes import preference_bp
+from services.scheduler_service import SchedulerService
 
 
 def create_app():
@@ -34,6 +35,7 @@ def create_app():
     register_error_handlers(app)
     register_cli_commands(app)
     configure_logging(app)
+    register_scheduler(app)
 
     @app.get("/api/health")
     def health_check():
@@ -111,6 +113,25 @@ def configure_logging(app: Flask):
         level=logging.INFO,
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     )
+
+
+def register_scheduler(app: Flask):
+    scheduler = SchedulerService(app=app)
+    app.extensions["scheduler_service"] = scheduler
+
+    if hasattr(app, "before_first_request"):
+        @app.before_first_request
+        def init_scheduler():
+            scheduler.start_scheduler()
+    else:
+        # Flask 3 compatibility: emulate first-request startup.
+        app.config["_scheduler_started"] = False
+
+        @app.before_request
+        def init_scheduler_fallback():
+            if not app.config.get("_scheduler_started", False):
+                scheduler.start_scheduler()
+                app.config["_scheduler_started"] = True
 
 
 app = create_app()
