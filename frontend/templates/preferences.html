@@ -21,15 +21,15 @@
   <header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
       <div>
-        <a href="/" class="flex items-center gap-2 font-bold text-xl">
+        <a href="/templates/index.html" class="flex items-center gap-2 font-bold text-xl">
           <svg class="h-7 w-7 text-blue-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3Zm0 14.17L5.74 13.8 4 14.76 12 19l8-4.24-1.74-.95L12 17.17Z"/></svg>
           <span>Saspirant</span>
         </a>
         <p id="welcomeText" class="mt-1 text-sm text-slate-600">Welcome, Aspirant!</p>
       </div>
       <div class="flex items-center gap-5 text-sm">
-        <a href="/dashboard" class="font-medium text-slate-600 transition hover:text-blue-600">Dashboard</a>
-        <a href="/preferences" class="font-semibold text-blue-600">Preferences</a>
+        <a href="/templates/dashboard.html" class="font-medium text-slate-600 transition hover:text-blue-600">Dashboard</a>
+        <a href="/templates/preferences.html" class="font-semibold text-blue-600">Preferences</a>
         <a href="#" class="font-medium text-slate-600 transition hover:text-blue-600">Logout</a>
       </div>
     </nav>
@@ -131,6 +131,7 @@
 
   <div id="toastContainer" class="pointer-events-none fixed right-4 top-4 z-50 flex w-full max-w-sm flex-col gap-2"></div>
 
+  <script src="/static/js/config.js"></script>
   <script src="/static/js/preferences.js"></script>
 </body>
 </html>
