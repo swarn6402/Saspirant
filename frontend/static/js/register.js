@@ -39,6 +39,10 @@ function showToast(message, type = "error") {
   setTimeout(() => toast.remove(), 2800);
 }
 
+function showError(message) {
+  showToast(message, "error");
+}
+
 function isValidEmail(value) {
   const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
   return emailPattern.test(value);
@@ -132,7 +136,10 @@ async function handleRegistration(event) {
 
   setSubmitting(true);
   try {
-    const response = await fetch("/api/auth/register", {
+    console.log("Attempting registration with data:", formData);
+    console.log("Sending to:", `${API_BASE_URL}/api/auth/register`);
+
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -140,7 +147,16 @@ async function handleRegistration(event) {
       body: JSON.stringify(formData),
     });
 
-    const data = await response.json();
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.error("Failed to parse JSON response:", parseError);
+      data = { error: "Invalid server response format" };
+    }
+
+    console.log("Registration response status:", response.status);
+    console.log("Registration response body:", data);
 
     if (response.ok) {
       localStorage.setItem("user_id", data.user_id);
@@ -148,13 +164,16 @@ async function handleRegistration(event) {
       inlineSuccess.textContent = "Account created successfully. Redirecting to preferences...";
       showToast("Registration successful.", "success");
       setTimeout(() => {
-        window.location.href = `/preferences?user_id=${data.user_id}`;
+        window.location.href = `/templates/preferences.html?user_id=${data.user_id}`;
       }, 1200);
     } else {
-      showToast(data.error || "Registration failed. Please try again.");
+      console.error("Server error response:", data);
+      showError(data.error || "Registration failed");
     }
   } catch (error) {
-    showToast("Registration failed. Please try again.");
+    console.error("Registration error:", error);
+    console.error("Error details:", error.message);
+    showError("Registration failed. Please try again. Error: " + error.message);
   } finally {
     setSubmitting(false);
   }

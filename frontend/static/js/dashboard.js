@@ -6,6 +6,16 @@ let cachedAlerts = [];
 let trendChart = null;
 let categoryChart = null;
 
+// Get user ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const userIdFromUrl = urlParams.get("user_id");
+console.log("Dashboard page loaded. User ID from URL:", userIdFromUrl);
+
+if (!userIdFromUrl) {
+  console.error("No user_id in URL!");
+  alert("Error: No user ID provided");
+}
+
 function showToast(message, type = "success") {
   const container = document.getElementById("toastContainer");
   const toast = document.createElement("div");
@@ -17,6 +27,10 @@ function showToast(message, type = "success") {
   container.appendChild(toast);
   setTimeout(() => { toast.style.opacity = "0"; }, 2500);
   setTimeout(() => toast.remove(), 3000);
+}
+
+function showError(message) {
+  showToast(message, "error");
 }
 
 function getUserId() {
@@ -59,7 +73,7 @@ function updateUserProfile(user) {
     .slice(0, 2)
     .toUpperCase();
   document.getElementById("userAvatar").textContent = initials;
-  document.getElementById("prefLink").href = `/preferences?user_id=${userId}`;
+  document.getElementById("prefLink").href = `/templates/preferences.html?user_id=${userId}`;
 }
 
 function updateStatsCards(stats, alerts) {
@@ -179,7 +193,7 @@ async function loadMonitoredUrls() {
   const grid = document.getElementById("websitesGrid");
   grid.innerHTML = `<div class="skeleton h-24 rounded-xl bg-slate-100"></div><div class="skeleton h-24 rounded-xl bg-slate-100"></div>`;
   try {
-    const response = await fetch(`/api/preferences/${userId}/urls`, { headers: apiHeaders() });
+    const response = await fetch(`${API_BASE_URL}/api/preferences/${userId}/urls`, { headers: apiHeaders() });
     const data = await response.json();
     const urls = data.urls || [];
     if (urls.length === 0) {
@@ -201,8 +215,8 @@ async function loadMonitoredUrls() {
           <span class="h-2.5 w-2.5 rounded-full ${item.is_active ? "bg-emerald-500" : "bg-slate-400"}"></span>
         </div>
         <div class="mt-3 flex flex-wrap gap-2">
-          <button id="scrape-btn-${item.id}" class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white">Scrape Now</button>
-          <a href="/preferences?user_id=${userId}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold">Edit</a>
+          <button id="scrape-btn-${item.id}" class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white">Test Scrape</button>
+          <a href="/templates/preferences.html?user_id=${userId}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold">Edit</a>
           <button class="remove-url rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700" data-id="${item.id}">Remove</button>
         </div>
         <p class="mt-2 text-xs text-slate-500">5 new notifications this week</p>
@@ -210,7 +224,9 @@ async function loadMonitoredUrls() {
       grid.appendChild(card);
     });
     urls.forEach((item) => {
-      document.getElementById(`scrape-btn-${item.id}`).addEventListener("click", () => triggerScrape(userId, item.id));
+      document
+        .getElementById(`scrape-btn-${item.id}`)
+        .addEventListener("click", () => triggerManualScrape(item.id, userId));
     });
     [...document.querySelectorAll(".remove-url")].forEach((btn) => {
       btn.addEventListener("click", () => removeMonitoredUrl(Number(btn.dataset.id)));
@@ -224,7 +240,7 @@ async function loadActivity() {
   const timeline = document.getElementById("activityTimeline");
   timeline.innerHTML = `<div class="skeleton h-16 rounded-lg bg-slate-100"></div><div class="skeleton h-16 rounded-lg bg-slate-100"></div>`;
   try {
-    const response = await fetch(`/api/dashboard/${userId}/activity`, { headers: apiHeaders() });
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/${userId}/activity`, { headers: apiHeaders() });
     const data = await response.json();
     const items = [];
 
@@ -321,7 +337,7 @@ async function loadRecentAlerts(id, filters = {}) {
     ...filters,
   });
   try {
-    const response = await fetch(`/api/dashboard/${id}/alerts?${query.toString()}`, { headers: apiHeaders() });
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/${id}/alerts?${query.toString()}`, { headers: apiHeaders() });
     const data = await response.json();
     let alerts = data.alerts || [];
     alerts = applyClientSort(alerts);
@@ -336,7 +352,7 @@ async function loadRecentAlerts(id, filters = {}) {
 
 async function removeMonitoredUrl(urlId) {
   try {
-    const response = await fetch(`/api/preferences/${userId}/urls/${urlId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/preferences/${userId}/urls/${urlId}`, {
       method: "DELETE",
       headers: apiHeaders(),
     });
@@ -352,12 +368,50 @@ async function removeMonitoredUrl(urlId) {
   }
 }
 
+async function triggerManualScrape(urlId, currentUserId) {
+  console.log(`Triggering manual scrape for URL ID: ${urlId}`);
+
+  const button = document.getElementById(`scrape-btn-${urlId}`);
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Testing...";
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/${currentUserId}/trigger-scrape/${urlId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Scrape response status:", response.status);
+    const data = await response.json();
+    console.log("Scrape result:", data);
+
+    if (response.ok) {
+      alert(`Scrape completed! Found ${data.notifications_found} notifications`);
+      await loadDashboard(currentUserId);
+    } else {
+      alert("Scrape failed: " + (data.error || "Unknown error"));
+    }
+  } catch (error) {
+    console.error("Scrape error:", error);
+    alert("Scrape failed: " + error.message);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Test Scrape";
+    }
+  }
+}
+
 async function triggerScrape(id, urlId) {
   const button = document.getElementById(`scrape-btn-${urlId}`);
   button.disabled = true;
   button.textContent = "Scraping...";
   try {
-    const response = await fetch(`/api/dashboard/${id}/trigger-scrape/${urlId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/${id}/trigger-scrape/${urlId}`, {
       method: "POST",
       headers: apiHeaders(),
     });
@@ -374,7 +428,7 @@ async function triggerScrape(id, urlId) {
 
 async function archiveAlert(alertId) {
   try {
-    const response = await fetch(`/api/dashboard/${userId}/alert/${alertId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/${userId}/alert/${alertId}`, {
       method: "DELETE",
       headers: apiHeaders(),
     });
@@ -391,13 +445,23 @@ async function archiveAlert(alertId) {
 }
 
 async function loadDashboard(id) {
+  console.log("Loading dashboard for user:", id);
+
   try {
-    const summaryResponse = await fetch(`/api/dashboard/${id}/summary`, { headers: apiHeaders() });
-    const summary = await summaryResponse.json();
+    console.log("Fetching summary from:", `${API_BASE_URL}/api/dashboard/${id}/summary`);
+
+    const summaryResponse = await fetch(`${API_BASE_URL}/api/dashboard/${id}/summary`, {
+      headers: apiHeaders(),
+    });
+    console.log("Summary response status:", summaryResponse.status);
+
     if (!summaryResponse.ok) {
-      showToast(summary.error || "Failed to load summary.", "error");
-      return;
+      const errorText = await summaryResponse.text();
+      console.error("Summary fetch failed:", errorText);
+      throw new Error(`Failed to load summary: ${summaryResponse.status}`);
     }
+    const summary = await summaryResponse.json();
+    console.log("Summary data received:", summary);
 
     updateUserProfile(summary.user);
     updateStatsCards(summary.stats || {}, summary.recent_alerts || []);
@@ -409,8 +473,10 @@ async function loadDashboard(id) {
       loadMonitoredUrls(),
       loadActivity(),
     ]);
-  } catch {
-    showToast("Dashboard load failed.", "error");
+  } catch (error) {
+    console.error("Dashboard load error:", error);
+    console.error("Error details:", error.message);
+    showError("Dashboard load failed: " + error.message);
   }
 }
 
