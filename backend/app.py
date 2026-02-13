@@ -1,8 +1,9 @@
 import logging
+import os
 from datetime import date
 
 import click
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect, request
 from flask_cors import CORS
 from sqlalchemy import text
 
@@ -18,14 +19,24 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(get_config())
 
+    if os.environ.get("FLASK_ENV") == "production":
+        app.config["DEBUG"] = False
+        app.config["TESTING"] = False
+
+        @app.before_request
+        def force_https():
+            if not request.is_secure and request.headers.get("X-Forwarded-Proto") != "https":
+                url = request.url.replace("http://", "https://", 1)
+                return redirect(url, code=301)
+
+    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
     CORS(
         app,
         resources={
             r"/api/*": {
-                "origins": [
-                    "http://localhost:3000",
-                    "http://127.0.0.1:3000",
-                ]
+                "origins": [frontend_url, "https://saspirant-frontend.onrender.com"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+                "allow_headers": ["Content-Type"],
             }
         },
     )
@@ -38,13 +49,36 @@ def create_app():
     register_scheduler(app)
 
     @app.get("/api/health")
-    def health_check():
+    def api_health_check():
         try:
             db.session.execute(text("SELECT 1"))
             return jsonify({"status": "ok", "database": "connected"}), 200
         except Exception:
             app.logger.exception("Health check failed while testing database connectivity.")
             return jsonify({"status": "error", "database": "disconnected"}), 500
+
+    @app.route("/health")
+    def health_check():
+        try:
+            db.session.execute(text("SELECT 1"))
+            scheduler_service = app.extensions.get("scheduler_service")
+            scheduler_state = (
+                "running"
+                if scheduler_service and scheduler_service.scheduler.running
+                else "stopped"
+            )
+            return (
+                jsonify(
+                    {
+                        "status": "healthy",
+                        "database": "connected",
+                        "scheduler": scheduler_state,
+                    }
+                ),
+                200,
+            )
+        except Exception as e:
+            return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
     return app
 
