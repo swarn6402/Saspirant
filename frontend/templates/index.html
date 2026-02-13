@@ -1,2 +1,177 @@
-{% extends 'base.html' %}{% block content %}<h1>Saspirant</h1>{% endblock %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saspirant | Smart Exam Job Alerts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: "Poppins", sans-serif; }
+    .reveal { opacity: 0; transform: translateY(20px); transition: all 600ms ease; }
+    .reveal.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <a href="/" class="flex items-center gap-2 font-bold text-xl">
+        <svg class="h-7 w-7 text-blue-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3Zm0 14.17L5.74 13.8 4 14.76 12 19l8-4.24-1.74-.95L12 17.17Z"/></svg>
+        <span>Saspirant</span>
+      </a>
+      <div class="hidden items-center gap-8 md:flex">
+        <a href="#about" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">About</a>
+        <a href="#how-it-works" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">How It Works</a>
+        <a href="/register" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">Get Started</a>
+      </div>
+      <a href="/register" class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-700">
+        Get Started
+      </a>
+    </nav>
+  </header>
+
+  <section class="relative overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-700 to-violet-700">
+    <div class="mx-auto grid max-w-7xl gap-10 px-6 py-20 text-white md:grid-cols-2 md:py-28">
+      <div class="reveal">
+        <p class="mb-4 inline-flex rounded-full border border-white/25 px-4 py-1 text-xs font-medium uppercase tracking-wider">Smart exam alerts</p>
+        <h1 class="text-4xl font-extrabold leading-tight md:text-5xl">Never Miss a Government Job Deadline Again</h1>
+        <p class="mt-5 max-w-xl text-blue-100 md:text-lg">Smart alerts for UPSC, SSC, Banking, and 50+ competitive exams</p>
+        <div class="mt-8">
+          <a href="/register" class="inline-flex items-center rounded-xl bg-white px-7 py-3 text-base font-semibold text-blue-700 transition hover:-translate-y-0.5 hover:bg-slate-100">
+            Start Free Monitoring
+          </a>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur">
+          <svg class="mx-auto h-44 w-44 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m6.75 2.25a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+          <p class="mt-5 text-center text-sm text-blue-100">Get notified only when an opportunity matches your profile and goals.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section id="about" class="mx-auto max-w-7xl px-6 py-20">
+      <div class="reveal text-center">
+        <h2 class="text-3xl font-bold md:text-4xl">Are You Missing Opportunities?</h2>
+      </div>
+      <div class="mt-12 grid gap-6 md:grid-cols-3">
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+          <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 14l3-3 2 2 5-5"/></svg>
+          <p class="mt-4 text-slate-700">Tracking 20+ websites manually is exhausting</p>
+        </article>
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+          <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12H3m18 0-4-4m4 4-4 4"/></svg>
+          <p class="mt-4 text-slate-700">Generic job alerts spam your inbox with irrelevant posts</p>
+        </article>
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+          <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z"/></svg>
+          <p class="mt-4 text-slate-700">You've missed deadlines because you didn't see the notification</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="bg-white py-20">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="reveal text-center">
+          <h2 class="text-3xl font-bold md:text-4xl">How Saspirant Works</h2>
+        </div>
+        <div class="mt-12 grid gap-6 md:grid-cols-3">
+          <article class="reveal rounded-2xl border border-slate-200 p-6 text-center transition hover:-translate-y-1 hover:shadow-lg">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-700 font-bold">1</div>
+            <h3 class="mt-4 font-semibold">Tell us what you're preparing for</h3>
+          </article>
+          <article class="reveal rounded-2xl border border-slate-200 p-6 text-center transition hover:-translate-y-1 hover:shadow-lg">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">2</div>
+            <h3 class="mt-4 font-semibold">We monitor official websites 24/7</h3>
+          </article>
+          <article class="reveal rounded-2xl border border-slate-200 p-6 text-center transition hover:-translate-y-1 hover:shadow-lg">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-violet-100 text-violet-700 font-bold">3</div>
+            <h3 class="mt-4 font-semibold">Get instant alerts for relevant opportunities only</h3>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-7xl px-6 py-20">
+      <div class="reveal text-center">
+        <h2 class="text-3xl font-bold md:text-4xl">Features Built for Serious Aspirants</h2>
+      </div>
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"><h3 class="font-semibold">Personalized Alerts</h3><p class="mt-2 text-sm text-slate-600">Only jobs matching your qualifications</p></article>
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"><h3 class="font-semibold">Multi-Source Monitoring</h3><p class="mt-2 text-sm text-slate-600">Track UPSC, SSC, State PSCs, and more</p></article>
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"><h3 class="font-semibold">PDF Parsing</h3><p class="mt-2 text-sm text-slate-600">We read notification PDFs so you don't have to</p></article>
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"><h3 class="font-semibold">Deadline Reminders</h3><p class="mt-2 text-sm text-slate-600">Never miss a last date</p></article>
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"><h3 class="font-semibold">Smart Filtering</h3><p class="mt-2 text-sm text-slate-600">Age, qualification, location filters</p></article>
+        <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg"><h3 class="font-semibold">Clean Inbox</h3><p class="mt-2 text-sm text-slate-600">No spam, only relevant opportunities</p></article>
+      </div>
+    </section>
+
+    <section class="bg-slate-900 py-20 text-white">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="reveal text-center">
+          <h2 class="text-3xl font-bold md:text-4xl">Supported Exams</h2>
+          <p class="mt-3 text-slate-300">And 50+ more exam categories</p>
+        </div>
+        <div class="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">UPSC</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">SSC</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">Banking (IBPS, SBI)</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">Railways</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">State PSCs</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">NDA</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">CLAT</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">NEET</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">JEE</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm">CUET</span>
+          <span class="reveal rounded-xl bg-white/10 px-4 py-3 text-center text-sm sm:col-span-3 lg:col-span-5">Teaching Exams</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-5xl px-6 py-20">
+      <div class="reveal rounded-3xl bg-gradient-to-r from-blue-700 to-indigo-700 p-10 text-center text-white shadow-xl">
+        <h2 class="text-3xl font-extrabold md:text-4xl">Ready to Stay Ahead?</h2>
+        <p class="mt-3 text-blue-100">No credit card required. 100% free for MVP.</p>
+        <a href="/register" class="mt-7 inline-block rounded-xl bg-white px-8 py-3 font-semibold text-blue-700 transition hover:-translate-y-0.5 hover:bg-slate-100">
+          Create Free Account
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 md:flex-row md:items-center md:justify-between">
+      <div class="flex flex-wrap gap-5 text-sm text-slate-600">
+        <a href="#" class="transition hover:text-blue-600">Privacy Policy</a>
+        <a href="#" class="transition hover:text-blue-600">Terms of Service</a>
+        <a href="#" class="transition hover:text-blue-600">Contact</a>
+      </div>
+      <div class="flex items-center gap-3 text-slate-500">
+        <span class="h-8 w-8 rounded-full border border-slate-300"></span>
+        <span class="h-8 w-8 rounded-full border border-slate-300"></span>
+        <span class="h-8 w-8 rounded-full border border-slate-300"></span>
+      </div>
+    </div>
+    <p class="border-t border-slate-100 py-5 text-center text-xs text-slate-500">Copyright 2026 Saspirant. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("show");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+  </script>
+</body>
+</html>
 
