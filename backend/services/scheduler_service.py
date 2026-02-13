@@ -51,7 +51,7 @@ class SchedulerService:
                 scheduled += 1
         return scheduled
 
-    def scrape_and_notify(self, monitored_url_id: int, attempt: int = 1) -> None:
+    def scrape_and_notify(self, monitored_url_id: int, attempt: int = 1) -> dict[str, Any]:
         """
         Scrape one monitored URL and send alerts for matching users.
 
@@ -59,14 +59,14 @@ class SchedulerService:
         """
         if not self.app:
             self.logger.error("App context missing. Cannot run scraping job.")
-            return
+            return {"success": False, "notifications_found": 0, "message": "App context missing."}
 
         try:
             with self.app.app_context():
                 monitored_url = MonitoredURL.query.get(monitored_url_id)
                 if not monitored_url or not monitored_url.is_active:
                     self.logger.info("Monitored URL %s is missing/inactive. Skipping.", monitored_url_id)
-                    return
+                    return {"success": False, "notifications_found": 0, "message": "Monitored URL missing/inactive."}
 
                 scraper = get_scraper(
                     monitored_url.url,
@@ -93,9 +93,20 @@ class SchedulerService:
                     monitored_url.url,
                     len(notifications),
                 )
+                return {
+                    "success": True,
+                    "notifications_found": len(notifications),
+                    "new_notifications_saved": saved_count,
+                    "message": "Scrape completed.",
+                }
         except Exception:
             self.logger.exception("Scraping job failed for monitored_url_id=%s", monitored_url_id)
             self._schedule_retry(monitored_url_id, attempt)
+            return {
+                "success": False,
+                "notifications_found": 0,
+                "message": "Scrape failed; retry scheduled if eligible.",
+            }
 
     def start_scheduler(self) -> None:
         """Start APScheduler and register all scraping jobs."""
@@ -116,11 +127,11 @@ class SchedulerService:
     def run_manual_scrape(self, monitored_url_id: int) -> dict[str, Any]:
         """Run immediate scrape for one monitored URL (useful for dashboard testing)."""
         try:
-            self.scrape_and_notify(monitored_url_id=monitored_url_id, attempt=1)
-            return {"success": True, "message": "Manual scrape completed."}
+            result = self.scrape_and_notify(monitored_url_id=monitored_url_id, attempt=1)
+            return result
         except Exception as exc:
             self.logger.exception("Manual scrape failed for monitored_url_id=%s", monitored_url_id)
-            return {"success": False, "message": str(exc)}
+            return {"success": False, "notifications_found": 0, "message": str(exc)}
 
     def _schedule_retry(self, monitored_url_id: int, attempt: int) -> None:
         if attempt >= 2:
