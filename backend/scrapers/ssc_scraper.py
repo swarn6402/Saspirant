@@ -1,0 +1,2 @@
+# SSC website scraper implementation.
+
