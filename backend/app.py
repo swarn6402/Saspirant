@@ -69,6 +69,10 @@ def create_app():
         except Exception as e:
             return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
+    @app.get("/")
+    def root_status():
+        return jsonify({"service": "Saspirant API", "status": "running"}), 200
+
     @app.route("/api/routes", methods=["GET"])
     def list_routes():
         routes = []
