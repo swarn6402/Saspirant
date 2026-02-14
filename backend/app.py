@@ -111,9 +111,14 @@ def register_blueprints(app: Flask):
 
 def apply_cors(app: Flask):
     # Apply CORS after all blueprints are registered.
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://saspirant.vercel.app",
+    ]
     CORS(
         app,
-        resources={r"/*": {"origins": "*"}},
+        resources={r"/*": {"origins": allowed_origins}},
         supports_credentials=True,
         allow_headers=["Content-Type", "Authorization", "X-User-Id"],
         methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -121,15 +126,12 @@ def apply_cors(app: Flask):
 
     @app.after_request
     def after_request(response):
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add(
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization,X-User-Id",
-        )
-        response.headers.add(
-            "Access-Control-Allow-Methods",
-            "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-        )
+        origin = request.headers.get("Origin")
+        if origin in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization,X-User-Id"
+        response.headers["Access-Control-Allow-Methods"] = "GET,PUT,POST,DELETE,PATCH,OPTIONS"
         return response
 
 
