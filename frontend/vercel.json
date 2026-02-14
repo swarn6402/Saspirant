@@ -3,6 +3,8 @@
     { "source": "/", "destination": "/templates/index.html" },
     { "source": "/register", "destination": "/templates/register.html" },
     { "source": "/preferences", "destination": "/templates/preferences.html" },
-    { "source": "/dashboard", "destination": "/templates/dashboard.html" }
+    { "source": "/dashboard", "destination": "/templates/dashboard.html" },
+    { "source": "/privacy", "destination": "/templates/privacy.html" },
+    { "source": "/terms", "destination": "/templates/terms.html" }
   ]
 }
