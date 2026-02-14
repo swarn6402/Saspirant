@@ -90,33 +90,110 @@ class MatchingService:
             True if job should be alerted to the user, False otherwise.
         """
         prefs = self._normalize_preferences(user_preferences)
+        print("\n=== MATCHING DEBUG ===")
+        print(f"Job: {getattr(job_notification, 'job_title', 'Unknown')}")
+        print(f"Job Category: {getattr(job_notification, 'exam_category', None)}")
+
         if not prefs:
+            print("[X] FAILED: no user preferences available")
             self.logger.info("Match failed: no user preferences available.")
+            print("======================\n")
             return False
 
-        if not self._is_exam_category_match(job_notification, prefs):
+        user_categories = [getattr(p, "exam_category", None) for p in prefs]
+        print(f"User Categories: {user_categories}")
+
+        # 1) Category check
+        job_category = (getattr(job_notification, "exam_category", "") or "").strip()
+        category_match = any((c or "").strip().lower() == job_category.lower() for c in user_categories)
+        print(f"Category Match: {category_match}")
+        if not category_match:
+            print(f"[X] FAILED: Category '{job_category}' not in {user_categories}")
+            self.logger.info(
+                "Category mismatch: job_category=%s, preferred_categories=%s",
+                job_category or "not specified",
+                sorted({(c or '').strip().lower() for c in user_categories if c}),
+            )
+            print("======================\n")
             return False
 
+        # 2) Age check
         age = self.calculate_age(user_dob)
+        print(f"User Age: {age}")
+        print(f"Job Age Limit: {getattr(job_notification, 'age_limit', None)}")
         if age is None:
+            print("[X] FAILED: invalid user DOB")
             self.logger.info("Match failed: invalid user DOB.")
-            return False
-        if not self._is_age_eligible(job_notification, prefs, age):
+            print("======================\n")
             return False
 
-        effective_user_qual = user_qualification or self._get_user_qualification_from_prefs(prefs) or "10th"
+        age_limit_raw = getattr(job_notification, "age_limit", None)
+        if age_limit_raw:
+            parsed = self.parse_age_limit(age_limit_raw)
+            print(f"Parsed Age Limits: {parsed}")
+            if parsed:
+                min_age = parsed.get("min", 0)
+                max_age = parsed.get("max", 999)
+                age_eligible = min_age <= age <= max_age
+                print(f"Age Check: {min_age} <= {age} <= {max_age} = {age_eligible}")
+                if not age_eligible:
+                    print(f"[X] FAILED: Age {age} not in range {min_age}-{max_age}")
+                    self.logger.info("Age mismatch: user=%s, range=%s-%s", age, min_age, max_age)
+                    print("======================\n")
+                    return False
+            else:
+                print("[!] Could not parse age limit, assuming eligible")
+        else:
+            print("[!] No age limit specified, assuming eligible")
+
+        pref_mins = [getattr(p, "min_age", None) for p in prefs if getattr(p, "min_age", None) is not None]
+        pref_maxs = [getattr(p, "max_age", None) for p in prefs if getattr(p, "max_age", None) is not None]
+        if pref_mins and age < min(pref_mins):
+            print(f"[X] FAILED: user age {age} below preference min {min(pref_mins)}")
+            self.logger.info("Preference age mismatch: user=%s, preference minimum=%s", age, min(pref_mins))
+            print("======================\n")
+            return False
+        if pref_maxs and age > max(pref_maxs):
+            print(f"[X] FAILED: user age {age} above preference max {max(pref_maxs)}")
+            self.logger.info("Preference age mismatch: user=%s, preference maximum=%s", age, max(pref_maxs))
+            print("======================\n")
+            return False
+
+        # 3) Qualification check
         required_qual = getattr(job_notification, "qualification_required", None) or "10th"
-        if not self.compare_qualifications(effective_user_qual, required_qual):
+        print(f"Job Qualification: {required_qual}")
+
+        effective_user_qual = user_qualification or self._get_user_qualification_from_prefs(prefs)
+        if not effective_user_qual:
+            print("[!] Cannot determine user qualification, assuming match baseline")
+            effective_user_qual = required_qual
+        print(f"User Qualification: {effective_user_qual}")
+
+        qual_match = self.compare_qualifications(effective_user_qual, required_qual)
+        print(f"Qualification Match: {qual_match}")
+        if not qual_match:
+            print(
+                f"[X] FAILED: User qual '{effective_user_qual}' "
+                f"doesn't meet required '{required_qual}'"
+            )
             self.logger.info(
                 "Qualification mismatch: user=%s, required=%s",
                 effective_user_qual,
                 required_qual,
             )
+            print("======================\n")
             return False
 
-        if not self._is_location_match(job_notification, prefs):
+        # 4) Location check
+        location_ok = self._is_location_match(job_notification, prefs)
+        print(f"Location Match: {location_ok}")
+        if not location_ok:
+            print("[X] FAILED: location mismatch")
+            print("======================\n")
             return False
 
+        print("[OK] MATCHED: All criteria passed!")
+        print("======================\n")
         return True
 
     def parse_age_limit(self, age_limit_string: str | None) -> dict[str, int]:
@@ -295,5 +372,9 @@ class MatchingService:
             value = getattr(pref, "highest_qualification", None)
             if isinstance(value, str) and value.strip():
                 return value.strip()
+            user = getattr(pref, "user", None)
+            user_value = getattr(user, "highest_qualification", None) if user is not None else None
+            if isinstance(user_value, str) and user_value.strip():
+                return user_value.strip()
         return None
 
