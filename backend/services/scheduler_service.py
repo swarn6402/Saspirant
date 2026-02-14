@@ -99,8 +99,23 @@ class SchedulerService:
                     "new_notifications_saved": saved_count,
                     "message": "Scrape completed.",
                 }
-        except Exception:
+        except Exception as e:
+            print(f"[ERROR] SCRAPER ERROR for URL ID {monitored_url_id}")
+            print(f"[ERROR] Error: {str(e)}")
+            import traceback
+
+            traceback.print_exc()
             self.logger.exception("Scraping job failed for monitored_url_id=%s", monitored_url_id)
+
+            try:
+                with self.app.app_context():
+                    monitored_url = MonitoredURL.query.get(monitored_url_id)
+                    if monitored_url:
+                        monitored_url.last_scraped_at = datetime.now()
+                        db.session.commit()
+            except Exception:
+                pass
+
             self._schedule_retry(monitored_url_id, attempt)
             return {
                 "success": False,
