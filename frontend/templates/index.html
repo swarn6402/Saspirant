@@ -191,54 +191,78 @@
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
   </script>
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const userId = localStorage.getItem("user_id");
-      const userName = localStorage.getItem("user_name");
-
-      if (userId && userName) {
-        console.log("User is logged in:", userName);
-
-        // Option 1: Auto-redirect to dashboard (commented out - use if you want auto-redirect)
-        // window.location.href = `/dashboard?user_id=${userId}`;
-
-        // Option 2: Update buttons to show Dashboard instead of Sign In/Register
-
-        // Update all "Sign In" links to "Dashboard"
-        const signInLinks = document.querySelectorAll('a[href="/login"], a[href="/templates/login.html"]');
-        signInLinks.forEach((link) => {
-          link.textContent = "Dashboard";
-          link.href = `/dashboard?user_id=${userId}`;
+document.addEventListener('DOMContentLoaded', function() {
+    const userId = localStorage.getItem('user_id');
+    const userName = localStorage.getItem('user_name');
+    
+    if (userId && userName) {
+        // User is logged in - make interface personalized and clean
+        
+        // 1. Update navigation "Sign In" to "Dashboard"
+        const navLinks = document.querySelectorAll('nav a, header a');
+        navLinks.forEach(link => {
+            if (link.textContent.trim() === 'Sign In' || link.href.includes('/login')) {
+                link.textContent = 'Dashboard';
+                link.href = `/dashboard?user_id=${userId}`;
+            }
         });
-
-        // Update "Get Started" buttons to "Go to Dashboard"
-        const getStartedBtns = document.querySelectorAll('a[href="/register"], a[href="/templates/register.html"]');
-        getStartedBtns.forEach((btn) => {
-          if (
-            btn.textContent.includes("Get Started") ||
-            btn.textContent.includes("Create") ||
-            btn.textContent.includes("Start")
-          ) {
-            btn.textContent = "Go to Dashboard";
-            btn.href = `/dashboard?user_id=${userId}`;
-          }
+        
+        // 2. Add user greeting with icon to header (far right)
+        const header = document.querySelector('header') || document.querySelector('nav');
+        if (header && !header.querySelector('.user-greeting')) {
+            const greeting = document.createElement('div');
+            greeting.className = 'user-greeting';
+            greeting.innerHTML = `
+                <span style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    color: #4B5563;
+                    font-weight: 500;
+                    padding: 6px 12px;
+                    background: #F3F4F6;
+                    border-radius: 20px;
+                    font-size: 14px;
+                ">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                    </svg>
+                    ${userName.split(' ')[0]}
+                </span>
+            `;
+            greeting.style.cssText = 'margin-left: auto;';
+            header.appendChild(greeting);
+        }
+        
+        // 3. Update hero CTA buttons to be personalized
+        const heroButtons = document.querySelectorAll('a[href="/register"], a[href*="register"]');
+        heroButtons.forEach(btn => {
+            const text = btn.textContent.trim();
+            if (text.includes('Get Started') || text.includes('Start Free') || text.includes('Create')) {
+                // For the main hero button, make it go to dashboard with better text
+                btn.textContent = 'Go to Dashboard →';
+                btn.href = `/dashboard?user_id=${userId}`;
+            }
         });
-
-        // Ensure clicking logo returns logged-in user to dashboard
-        const logoLink = document.querySelector('nav a[href="/templates/index.html"], nav a[href="/"]');
-        if (logoLink) {
-          logoLink.href = `/dashboard?user_id=${userId}`;
+        
+        // 4. Add welcome message to hero section (optional but nice touch)
+        const heroHeading = document.querySelector('h1');
+        if (heroHeading && !document.querySelector('.welcome-back-msg')) {
+            const welcomeMsg = document.createElement('p');
+            welcomeMsg.className = 'welcome-back-msg';
+            welcomeMsg.textContent = `Welcome back, ${userName.split(' ')[0]}! 👋`;
+            welcomeMsg.style.cssText = `
+                color: #10B981;
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 12px;
+                animation: fadeIn 0.5s ease-in;
+            `;
+            heroHeading.parentNode.insertBefore(welcomeMsg, heroHeading);
         }
-
-        // Add user name to header (optional, looks professional)
-        const headerNav = document.querySelector("nav") || document.querySelector("header");
-        if (headerNav) {
-          const userGreeting = document.createElement("span");
-          userGreeting.textContent = `Hi, ${userName}`;
-          userGreeting.style.cssText = "margin-right: 20px; color: #333;";
-          headerNav.appendChild(userGreeting);
-        }
-      }
-    });
+    }
+});
   </script>
 </body>
 </html>
