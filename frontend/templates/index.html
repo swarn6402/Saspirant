@@ -30,7 +30,6 @@
         <a href="#about" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">About</a>
         <a href="#how-it-works" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">How It Works</a>
         <a href="/login" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">Sign In</a>
-        <a href="/templates/register.html" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">Get Started</a>
       </div>
       <a href="/templates/register.html" class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-700">
         Get Started
@@ -190,81 +189,44 @@
     }, { threshold: 0.12 });
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
   </script>
+
   <script>
 document.addEventListener('DOMContentLoaded', function() {
     const userId = localStorage.getItem('user_id');
     const userName = localStorage.getItem('user_name');
     
-    if (userId && userName) {
-        // User is logged in - make interface personalized and clean
-        
-        // 1. Update navigation "Sign In" to "Dashboard"
-        const navLinks = document.querySelectorAll('nav a, header a');
-        navLinks.forEach(link => {
-            if (link.textContent.trim() === 'Sign In' || link.href.includes('/login')) {
-                link.textContent = 'Dashboard';
-                link.href = `/dashboard?user_id=${userId}`;
-            }
-        });
-        
-        // 2. Add user greeting with icon to header (far right)
-        const header = document.querySelector('header') || document.querySelector('nav');
-        if (header && !header.querySelector('.user-greeting')) {
-            const greeting = document.createElement('div');
-            greeting.className = 'user-greeting';
-            greeting.innerHTML = `
-                <span style="
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 8px;
-                    color: #4B5563;
-                    font-weight: 500;
-                    padding: 6px 12px;
-                    background: #F3F4F6;
-                    border-radius: 20px;
-                    font-size: 14px;
-                ">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="8" r="4"/>
-                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
-                    </svg>
-                    ${userName.split(' ')[0]}
-                </span>
-            `;
-            greeting.style.cssText = 'margin-left: auto;';
-            header.appendChild(greeting);
-        }
-        
-        // 3. Update hero CTA buttons to be personalized
-        const heroButtons = document.querySelectorAll('a[href="/register"], a[href*="register"]');
-        heroButtons.forEach(btn => {
-            const text = btn.textContent.trim();
-            if (text.includes('Get Started') || text.includes('Start Free') || text.includes('Create')) {
-                // For the main hero button, make it go to dashboard with better text
-                btn.textContent = 'Go to Dashboard →';
-                btn.href = `/dashboard?user_id=${userId}`;
-            }
-        });
-        
-        // 4. Add welcome message to hero section (optional but nice touch)
-        const heroHeading = document.querySelector('h1');
-        if (heroHeading && !document.querySelector('.welcome-back-msg')) {
-            const welcomeMsg = document.createElement('p');
-            welcomeMsg.className = 'welcome-back-msg';
-            welcomeMsg.textContent = `Welcome back, ${userName.split(' ')[0]}! 👋`;
-            welcomeMsg.style.cssText = `
-                color: #10B981;
-                font-size: 18px;
-                font-weight: 600;
-                margin-bottom: 12px;
-                animation: fadeIn 0.5s ease-in;
-            `;
-            heroHeading.parentNode.insertBefore(welcomeMsg, heroHeading);
+    if (!userId || !userName) {
+        // User is NOT logged in - do nothing, page is already correct
+        return;
+    }
+    
+    // User IS logged in - make minimal, targeted changes
+    
+    // 1. Change "Sign In" nav link to "Dashboard" (ONLY the one in header navigation)
+    const headerNav = document.querySelector('header nav') || document.querySelector('nav') || document.querySelector('header');
+    if (headerNav) {
+        const signInLink = headerNav.querySelector('a[href*="login"]');
+        if (signInLink && signInLink.textContent.includes('Sign In')) {
+            signInLink.textContent = 'Dashboard';
+            signInLink.href = `/dashboard?user_id=${userId}`;
         }
     }
+    
+    // 2. Add user greeting ONLY (no duplicates, check first)
+    if (headerNav && !document.querySelector('.user-greeting')) {
+        const greeting = document.createElement('span');
+        greeting.className = 'user-greeting';
+        greeting.textContent = `Hi, ${userName.split(' ')[0]}`;
+        greeting.style.cssText = 'color: #4B5563; font-weight: 500; margin-left: 20px;';
+        headerNav.appendChild(greeting);
+    }
+    
+    // That's it! No changing buttons, no welcome messages, just those 2 simple changes.
 });
   </script>
 </body>
 </html>
+
+
 
 
