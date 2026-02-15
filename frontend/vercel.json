@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/", "destination": "/templates/index.html" },
     { "source": "/register", "destination": "/templates/register.html" },
+    { "source": "/login", "destination": "/templates/login.html" },
     { "source": "/preferences", "destination": "/templates/preferences.html" },
     { "source": "/dashboard", "destination": "/templates/dashboard.html" },
     { "source": "/privacy", "destination": "/templates/privacy.html" },

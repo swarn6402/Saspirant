@@ -29,6 +29,7 @@
       <div class="hidden items-center gap-8 md:flex">
         <a href="#about" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">About</a>
         <a href="#how-it-works" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">How It Works</a>
+        <a href="/login" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">Sign In</a>
         <a href="/templates/register.html" class="text-sm font-medium text-slate-600 transition hover:text-blue-600">Get Started</a>
       </div>
       <a href="/templates/register.html" class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-blue-700">
@@ -188,6 +189,22 @@
       });
     }, { threshold: 0.12 });
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Check if user is logged in
+      const userId = localStorage.getItem("user_id");
+      const userName = localStorage.getItem("user_name");
+
+      if (userId && userName) {
+        // User is logged in - change "Sign In" to "Dashboard"
+        const signInBtn = document.querySelector('a[href="/login"]');
+        if (signInBtn) {
+          signInBtn.textContent = "Dashboard";
+          signInBtn.href = `/dashboard?user_id=${userId}`;
+        }
+      }
+    });
   </script>
 </body>
 </html>

@@ -30,6 +30,7 @@ class EmailService:
         self.dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:5000/dashboard")
         self.unsubscribe_url = os.getenv("UNSUBSCRIBE_URL", "http://localhost:5000/unsubscribe")
         self.templates_dir = Path(__file__).resolve().parent.parent / "templates" / "email"
+        self.sg = SendGridAPIClient(self.api_key) if self.api_key else None
 
         if not self.api_key:
             self.logger.warning("SENDGRID_API_KEY is not configured.")
@@ -85,19 +86,91 @@ class EmailService:
         return self._send_email(user_email, subject, html_body)
 
     def send_welcome_email(self, user_email: str, user_name: str) -> dict[str, Any]:
-        """Send a welcome email to a newly registered user."""
-        if not self._can_send():
-            return {"success": False, "message": "Daily SendGrid limit reached."}
+        """Send welcome email when user registers"""
+        try:
+            if not self._can_send():
+                return {"success": False, "message": "Daily SendGrid limit reached."}
+            if not user_email:
+                return {"success": False, "message": "Missing user email."}
+            if not self.sg or not self.from_email:
+                return {
+                    "success": False,
+                    "message": "Missing SENDGRID_API_KEY or SENDGRID_FROM_EMAIL.",
+                }
 
-        subject = "Welcome to Saspirant"
-        html_body = self._render_template(
-            "welcome_template.html",
-            {
-                "user_name": user_name or "User",
-                "dashboard_url": self.dashboard_url,
-            },
-        )
-        return self._send_email(user_email, subject, html_body)
+            subject = "🎉 Welcome to Saspirant!"
+
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                             color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                    .content {{ background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }}
+                    .button {{ display: inline-block; background: #4F46E5; color: white;
+                             padding: 12px 30px; text-decoration: none; border-radius: 5px;
+                             margin: 20px 0; }}
+                    .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 14px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Welcome to Saspirant! 🎓</h1>
+                    </div>
+                    <div class="content">
+                        <h2>Hi {user_name},</h2>
+                        <p>Thank you for joining Saspirant! We're excited to help you never miss another government job or exam deadline.</p>
+
+                        <h3>What's Next?</h3>
+                        <ol>
+                            <li><strong>Set Your Preferences:</strong> Choose which exams you're preparing for</li>
+                            <li><strong>Add Websites to Monitor:</strong> We'll track official recruitment sites for you</li>
+                            <li><strong>Get Smart Alerts:</strong> Receive emails only for opportunities matching your profile</li>
+                        </ol>
+
+                        <p style="text-align: center;">
+                            <a href="https://saspirant.vercel.app/dashboard" class="button">Go to Dashboard</a>
+                        </p>
+
+                        <p><strong>How Saspirant Works:</strong></p>
+                        <ul>
+                            <li>We monitor official websites 24/7</li>
+                            <li>Smart filtering ensures you only get relevant alerts</li>
+                            <li>Never miss a deadline again!</li>
+                        </ul>
+
+                        <p>If you have any questions, feel free to reach out!</p>
+
+                        <p>Best regards,<br>The Saspirant Team</p>
+                    </div>
+                    <div class="footer">
+                        <p>© 2026 Saspirant. All rights reserved.</p>
+                        <p><a href="https://saspirant.vercel.app/privacy">Privacy Policy</a> |
+                           <a href="https://saspirant.vercel.app/terms">Terms of Service</a></p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            message = Mail(
+                from_email=self.from_email,
+                to_emails=user_email,
+                subject=subject,
+                html_content=html_content,
+            )
+
+            self.sg.send(message)
+            self._increment_daily_count()
+
+            return {"success": True, "message": "Welcome email sent successfully"}
+        except Exception as e:
+            print(f"Error sending welcome email: {str(e)}")
+            return {"success": False, "message": str(e)}
 
     def send_test_email(self, user_email: str) -> dict[str, Any]:
         """Send a test email to verify SendGrid integration."""

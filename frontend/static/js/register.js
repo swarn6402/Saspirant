@@ -1,6 +1,8 @@
 const form = document.getElementById("registrationForm");
 const nameInput = document.getElementById("name");
 const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const confirmPasswordInput = document.getElementById("confirm_password");
 const dobInput = document.getElementById("dob");
 const qualificationInput = document.getElementById("qualification");
 const submitBtn = document.getElementById("submitBtn");
@@ -127,9 +129,25 @@ async function handleRegistration(event) {
     return;
   }
 
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirm_password").value;
+
+  // Validate passwords match
+  if (password !== confirmPassword) {
+    showError("Passwords do not match");
+    return;
+  }
+
+  // Validate password length
+  if (password.length < 8) {
+    showError("Password must be at least 8 characters");
+    return;
+  }
+
   const formData = {
     name: nameInput.value.trim(),
     email: emailInput.value.trim(),
+    password: password,
     date_of_birth: dobInput.value,
     highest_qualification: qualificationInput.value,
   };
@@ -181,6 +199,11 @@ async function handleRegistration(event) {
 
 form.addEventListener("submit", handleRegistration);
 [nameInput, emailInput, dobInput, qualificationInput].forEach((el) => {
+  el.addEventListener("input", validateForm);
+  el.addEventListener("change", validateForm);
+});
+
+[passwordInput, confirmPasswordInput].forEach((el) => {
   el.addEventListener("input", validateForm);
   el.addEventListener("change", validateForm);
 });

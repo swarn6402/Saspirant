@@ -6,14 +6,15 @@ let cachedAlerts = [];
 let trendChart = null;
 let categoryChart = null;
 
-// Get user ID from URL
+// Check if user is logged in
 const urlParams = new URLSearchParams(window.location.search);
 const userIdFromUrl = urlParams.get("user_id");
-console.log("Dashboard page loaded. User ID from URL:", userIdFromUrl);
+const storedUserId = localStorage.getItem("user_id");
 
-if (!userIdFromUrl) {
-  console.error("No user_id in URL!");
-  alert("Error: No user ID provided");
+if (!userIdFromUrl || userIdFromUrl !== storedUserId) {
+  // Not logged in or session mismatch - redirect to login
+  alert("Please log in to continue");
+  window.location.href = "/login";
 }
 
 function showToast(message, type = "success") {
@@ -555,4 +556,29 @@ function init() {
 }
 
 init();
+
+async function handleLogout() {
+    try {
+        // Call logout endpoint
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        // Clear localStorage
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("user_name");
+        localStorage.removeItem("user_email");
+
+        // Redirect to home page
+        window.location.href = "/";
+    } catch (error) {
+        console.error("Logout error:", error);
+        // Even if API call fails, clear local storage and redirect
+        localStorage.clear();
+        window.location.href = "/";
+    }
+}
 

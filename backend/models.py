@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import check_password_hash, generate_password_hash
 
 db = SQLAlchemy()
 
@@ -13,6 +14,7 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     date_of_birth = db.Column(db.Date, nullable=False)
     highest_qualification = db.Column(db.String(50), nullable=False)
+    password_hash = db.Column(db.String(256))
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
 
@@ -25,6 +27,12 @@ class User(db.Model):
     sent_alerts = db.relationship(
         "SentAlert", back_populates="user", cascade="all, delete-orphan", lazy=True
     )
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 
 class UserPreference(db.Model):

@@ -1,3 +1,14 @@
+// Check if user is logged in
+const urlParams = new URLSearchParams(window.location.search);
+const userIdFromUrl = urlParams.get("user_id");
+const storedUserId = localStorage.getItem("user_id");
+
+if (!userIdFromUrl || userIdFromUrl !== storedUserId) {
+  // Not logged in or session mismatch - redirect to login
+  alert("Please log in to continue");
+  window.location.href = "/login";
+}
+
 const EXAM_CATEGORIES = [
   { key: "UPSC", label: "UPSC", desc: "Civil Services" },
   { key: "SSC", label: "SSC", desc: "Staff Selection Commission" },

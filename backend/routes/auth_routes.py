@@ -5,6 +5,7 @@ from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy.exc import SQLAlchemyError
 
 from models import User, db
+from services.email_service import EmailService
 
 auth_bp = Blueprint("auth_routes", __name__)
 
@@ -45,6 +46,7 @@ def register_user():
 
         name = payload.get("name")
         email = payload.get("email")
+        password = payload.get("password")
         dob_str = payload.get("date_of_birth")
         highest_qualification = payload.get("highest_qualification")
 
@@ -53,6 +55,12 @@ def register_user():
 
         if not email or not validate_email(email):
             return jsonify({"error": "Invalid email format"}), 400
+
+        if not password or not isinstance(password, str):
+            return jsonify({"error": "Password is required"}), 400
+
+        if len(password) < 8:
+            return jsonify({"error": "Password must be at least 8 characters long"}), 400
 
         if not dob_str or not isinstance(dob_str, str):
             return jsonify({"error": "date_of_birth is required in YYYY-MM-DD format"}), 400
@@ -89,8 +97,21 @@ def register_user():
             date_of_birth=dob,
             highest_qualification=highest_qualification,
         )
+        user.set_password(password)
         db.session.add(user)
         db.session.commit()
+
+        # Send welcome email
+        try:
+            email_service = EmailService()
+            result = email_service.send_welcome_email(user.email, user.name)
+            print(f"Welcome email result: {result}")
+            if not result.get('success'):
+                print(f"Welcome email failed: {result.get('message')}")
+        except Exception as e:
+            print(f"Error sending welcome email: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
         return jsonify({"message": "User registered successfully", "user_id": user.id}), 201
     except SQLAlchemyError:
@@ -101,6 +122,44 @@ def register_user():
         db.session.rollback()
         current_app.logger.exception("Unexpected error during user registration.")
         return jsonify({"error": "Unexpected error while registering user"}), 500
+
+
+@auth_bp.post("/login")
+def login():
+    try:
+        data = request.get_json(silent=True) or {}
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return jsonify({"error": "Email and password required"}), 400
+
+        user = User.query.filter_by(email=email.strip().lower()).first()
+        if not user:
+            return jsonify({"error": "Invalid email or password"}), 401
+
+        if not user.check_password(password):
+            return jsonify({"error": "Invalid email or password"}), 401
+
+        return (
+            jsonify(
+                {
+                    "message": "Login successful",
+                    "user_id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                }
+            ),
+            200,
+        )
+    except Exception as e:
+        current_app.logger.exception("Unexpected error during login.")
+        return jsonify({"error": str(e)}), 500
+
+
+@auth_bp.post("/logout")
+def logout():
+    return jsonify({"message": "Logged out successfully"}), 200
 
 
 @auth_bp.get("/user/<int:user_id>")
