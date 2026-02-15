@@ -192,16 +192,50 @@
   </script>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      // Check if user is logged in
       const userId = localStorage.getItem("user_id");
       const userName = localStorage.getItem("user_name");
 
       if (userId && userName) {
-        // User is logged in - change "Sign In" to "Dashboard"
-        const signInBtn = document.querySelector('a[href="/login"]');
-        if (signInBtn) {
-          signInBtn.textContent = "Dashboard";
-          signInBtn.href = `/dashboard?user_id=${userId}`;
+        console.log("User is logged in:", userName);
+
+        // Option 1: Auto-redirect to dashboard (commented out - use if you want auto-redirect)
+        // window.location.href = `/dashboard?user_id=${userId}`;
+
+        // Option 2: Update buttons to show Dashboard instead of Sign In/Register
+
+        // Update all "Sign In" links to "Dashboard"
+        const signInLinks = document.querySelectorAll('a[href="/login"], a[href="/templates/login.html"]');
+        signInLinks.forEach((link) => {
+          link.textContent = "Dashboard";
+          link.href = `/dashboard?user_id=${userId}`;
+        });
+
+        // Update "Get Started" buttons to "Go to Dashboard"
+        const getStartedBtns = document.querySelectorAll('a[href="/register"], a[href="/templates/register.html"]');
+        getStartedBtns.forEach((btn) => {
+          if (
+            btn.textContent.includes("Get Started") ||
+            btn.textContent.includes("Create") ||
+            btn.textContent.includes("Start")
+          ) {
+            btn.textContent = "Go to Dashboard";
+            btn.href = `/dashboard?user_id=${userId}`;
+          }
+        });
+
+        // Ensure clicking logo returns logged-in user to dashboard
+        const logoLink = document.querySelector('nav a[href="/templates/index.html"], nav a[href="/"]');
+        if (logoLink) {
+          logoLink.href = `/dashboard?user_id=${userId}`;
+        }
+
+        // Add user name to header (optional, looks professional)
+        const headerNav = document.querySelector("nav") || document.querySelector("header");
+        if (headerNav) {
+          const userGreeting = document.createElement("span");
+          userGreeting.textContent = `Hi, ${userName}`;
+          userGreeting.style.cssText = "margin-right: 20px; color: #333;";
+          headerNav.appendChild(userGreeting);
         }
       }
     });
