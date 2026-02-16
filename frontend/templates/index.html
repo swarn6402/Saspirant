@@ -201,6 +201,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // User IS logged in - make minimal, targeted changes
+
+    // Hide the big "Get Started" CTA button (we already have Dashboard in nav)
+    const ctaButtons = document.querySelectorAll('a[href="/register"], a[href*="register"]');
+    ctaButtons.forEach(btn => {
+        // Only hide big CTA buttons, not small nav links
+        if (btn.classList.contains('btn') || btn.classList.contains('button') ||
+            btn.textContent.includes('Get Started') || btn.textContent.includes('Start Free')) {
+            btn.style.display = 'none';
+        }
+    });
     
     // 1. Change "Sign In" nav link to "Dashboard" (ONLY the one in header navigation)
     const headerNav = document.querySelector('header nav') || document.querySelector('nav') || document.querySelector('header');
@@ -221,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
         headerNav.appendChild(greeting);
     }
     
-    // That's it! No changing buttons, no welcome messages, just those 2 simple changes.
+    // That's it! Keep changes minimal and targeted.
 });
   </script>
 </body>
