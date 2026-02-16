@@ -1,502 +1,181 @@
-﻿# Saspirant - Smart Job Alert Platform for Competitive Exams
+﻿# Saspirant
 
-> Never miss a government job or exam deadline again. Saspirant monitors official recruitment websites 24/7 and sends you personalized email alerts for opportunities matching your qualifications.
+> Smart job alert platform for Indian competitive exam aspirants. Never miss a government job deadline again.
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0-green.svg)](https://flask.palletsprojects.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/demo-live-success)](https://saspirant.vercel.app)
+[![Python](https://img.shields.io/badge/python-3.11-blue)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
----
+## 🎯 Problem & Solution
 
-## 📋 Table of Contents
+**Problem:** Indian exam aspirants miss government job deadlines because notifications are scattered across 100+ websites.
 
-- [Problem Statement](#-problem-statement)
-- [Solution](#-solution)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
-- [API Documentation](#-api-documentation)
-- [Deployment](#-deployment)
-- [Testing](#-testing)
-- [Contributing](#-contributing)
-- [License](#-license)
-
----
-
-## 🎯 Problem Statement
-
-Students and professionals preparing for competitive exams in India face a critical challenge:
-
-- **Fragmented Information**: Government recruitment notifications are scattered across 100+ websites (UPSC, SSC, State PSCs, Universities, Banking, Railways, etc.)
-- **Manual Tracking**: Aspirants must manually check each website daily to avoid missing deadlines
-- **Spam Alerts**: Existing job alert services send irrelevant notifications, creating inbox clutter
-- **Missed Opportunities**: A single missed deadline can mean waiting another year for the next exam cycle
-
-**The Cost**: Thousands of aspirants miss application deadlines every year, losing opportunities worth lakhs in salary and career growth.
-
----
-
-## 💡 Solution
-
-**Saspirant** is an intelligent job alert system that:
-
-1. **Monitors** official recruitment websites automatically (24/7 scheduled scraping)
-2. **Filters** opportunities based on your exact qualifications (age, education, exam preferences)
-3. **Alerts** you via email only when truly relevant jobs are posted
-4. **Tracks** all your alerts in a centralized dashboard
-
-**Key Differentiator**: Zero spam - you only receive alerts for jobs you're actually eligible for and interested in.
-
----
+**Solution:** Saspirant monitors official recruitment sites 24/7, filters opportunities by your eligibility (age, education, exam type), and sends personalized email alerts.
 
 ## ✨ Features
 
-### For Users
-- **Personalized Monitoring**: Select specific exam categories (UPSC, SSC, Banking, State PSCs, Universities, etc.)
-- **Smart Filtering**: Set age limits, qualification requirements, and location preferences
-- **Multi-Source Tracking**: Monitor multiple official websites simultaneously
-- **Email Alerts**: Instant notifications when matching opportunities are posted
-- **Dashboard**: View all alerts, deadlines, and monitoring status in one place
-- **Manual Scraping**: Trigger immediate checks on any monitored website
-
-### Technical Features
-- **Intelligent Web Scraping**: Handles diverse website structures (HTML, PDF notifications, dynamic content)
-- **PDF Parsing**: Automatically extracts details from recruitment PDFs
-- **Matching Engine**: Sophisticated logic to match jobs with user eligibility criteria
-- **Scheduled Tasks**: APScheduler runs periodic scraping (configurable intervals)
-- **Email Delivery**: SendGrid integration for reliable email delivery
-- **Database Persistence**: PostgreSQL for robust data storage
-
----
+- **Smart Monitoring** - Automated scraping of UPSC, SSC, universities, and other official sites
+- **Intelligent Filtering** - Only get alerts for jobs matching your age, qualification, and preferences
+- **Email Alerts** - Instant notifications via SendGrid when opportunities are posted
+- **Google OAuth** - Sign in with Google or traditional email/password
+- **Dashboard** - Track all alerts, deadlines, and monitored websites in one place
+- **Manual Scraping** - Trigger immediate checks on any website
 
 ## 🛠 Tech Stack
 
-### Backend
-- **Framework**: Flask 3.0 (Python web framework)
-- **Database**: PostgreSQL (via Neon.tech for production)
-- **ORM**: SQLAlchemy 3.1
-- **Task Scheduler**: APScheduler 3.10
-- **Web Scraping**: 
-  - BeautifulSoup4 (HTML parsing)
-  - Selenium (dynamic content)
-  - pdfplumber (PDF text extraction)
-- **Email**: SendGrid API
-- **Server**: Gunicorn (production WSGI server)
+**Frontend:** HTML, CSS (Tailwind), JavaScript  
+**Backend:** Flask 3.0, Python 3.11  
+**Database:** PostgreSQL (Neon)  
+**Authentication:** Flask sessions + Google OAuth (Authlib)  
+**Scraping:** BeautifulSoup4, Selenium, pdfplumber  
+**Email:** SendGrid API  
+**Scheduler:** APScheduler (periodic scraping)  
+**Deployment:** Vercel (frontend) + Render (backend)
 
-### Frontend
-- **HTML/CSS/JavaScript** (Vanilla JS, no frameworks)
-- **Styling**: Tailwind CSS (utility-first CSS)
-- **UI Components**: Custom-built responsive components
-
-### Infrastructure
-- **Hosting**: 
-  - Frontend: Vercel (static hosting)
-  - Backend: PythonAnywhere (Python hosting with scheduler support)
-- **Database**: Neon (serverless PostgreSQL)
-- **Email Service**: SendGrid (100 emails/day free tier)
-
----
-
-```
-## 🏗 Architecture
-┌─────────────────────────────────────────────────────────────┐
-│                        USER INTERFACE                        │
-│  (Landing Page → Registration → Preferences → Dashboard)     │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      FLASK REST API                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ Auth Routes  │  │ Preferences  │  │  Dashboard   │      │
-│  │   /api/auth  │  │/api/preferences│ │/api/dashboard│      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    CORE SERVICES LAYER                       │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌───────────┐ │
-│  │ Scraper Service  │  │ Matching Service │  │   Email   │ │
-│  │  (Web Scraping)  │  │ (Job Filtering)  │  │  Service  │ │
-│  └──────────────────┘  └──────────────────┘  └───────────┘ │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   APSCHEDULER (Cron Jobs)                    │
-│          Runs scraping tasks every 6 hours (configurable)    │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  POSTGRESQL DATABASE                         │
-│  Tables: users, preferences, monitored_urls,                 │
-│          job_notifications, sent_alerts                      │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Workflow
-
-1. **User Registration**: User provides name, email, DOB, qualification
-2. **Preference Setup**: User selects exam categories and adds URLs to monitor
-3. **Scheduled Scraping**: APScheduler runs scrapers every 6 hours for each monitored URL
-4. **Data Extraction**: Scrapers fetch notifications, parse PDFs, extract job details
-5. **Matching**: Matching engine compares jobs with user eligibility (age, qualification, categories)
-6. **Alert Delivery**: If match found → Send email via SendGrid → Record in database
-7. **Dashboard Display**: User sees all alerts, stats, and can trigger manual scrapes
-
----
-
-## 📦 Installation
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.9 or higher
-- PostgreSQL database (or Neon.tech account)
-- SendGrid account (for email alerts)
+- Python 3.11+
+- PostgreSQL (or Neon account)
+- SendGrid account
+- Google OAuth credentials (optional)
 
 ### Local Setup
 
-1. **Clone the repository**
+1. **Clone & Install**
 ```bash
 git clone https://github.com/swarn6402/saspirant.git
-cd saspirant
-```
-
-2. **Set up backend**
-```bash
-cd backend
+cd saspirant/backend
 python -m venv venv
-
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On Mac/Linux:
-source venv/bin/activate
-
-# Install dependencies
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. **Configure environment variables**
-```bash
-# Create .env file in backend/ directory
-cp .env.example .env
+2. **Configure Environment**
 
-# Edit .env with your credentials:
-DATABASE_URL=postgresql://user:password@host/database
-SENDGRID_API_KEY=your_sendgrid_api_key
-SENDGRID_FROM_EMAIL=your_verified_email@example.com
-FLASK_SECRET_KEY=generate_a_random_secret_key
-FLASK_ENV=development
+Create `backend/.env`:
+
+```env
+DATABASE_URL=postgresql://user:pass@host/db
+SENDGRID_API_KEY=your_sendgrid_key
+SENDGRID_FROM_EMAIL=your_email@example.com
+FLASK_SECRET_KEY=your_secret_key
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_secret
 ```
 
-4. **Initialize database**
+3. **Initialize Database**
+
 ```bash
 flask init-db
 ```
 
-5. **Run the application**
+4. **Run Servers**
+
 ```bash
-# Start backend server
-python app.py
-# Backend runs on http://127.0.0.1:5000
-
-# In a new terminal, start frontend
-cd ../frontend
-python -m http.server 3000
-# Frontend runs on http://127.0.0.1:3000
-```
-
-6. **Access the application**
-- Open browser: `http://127.0.0.1:3000/templates/index.html`
-
----
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host/db` |
-| `SENDGRID_API_KEY` | SendGrid API key for emails | `SG.xxxxxxxxxxxxxxx` |
-| `SENDGRID_FROM_EMAIL` | Verified sender email | `alerts@saspirant.com` |
-| `FLASK_SECRET_KEY` | Flask session secret key | `random_string_here` |
-| `FLASK_ENV` | Environment (development/production) | `production` |
-
-### Scraper Configuration
-
-Modify scraping frequency in `backend/services/scheduler_service.py`:
-```python
-# Default: every 6 hours
-scheduler.add_job(scrape_and_notify, 'interval', hours=6)
-```
-
----
-
-## 📖 Usage
-
-### For End Users
-
-1. **Register**: Create account with name, email, DOB, qualification
-2. **Set Preferences**: 
-   - Select exam categories (UPSC, SSC, Banking, etc.)
-   - Optionally set age range and location preferences
-3. **Add URLs**: Add official recruitment website URLs to monitor
-4. **Receive Alerts**: Get email notifications when matching jobs are posted
-5. **Dashboard**: View all alerts, trigger manual scrapes, manage preferences
-
-### For Developers
-
-#### Add a New Scraper
-
-1. Create scraper in `backend/scrapers/`:
-```python
-from .base_scraper import BaseScraper
-
-class NewSiteScraper(BaseScraper):
-    def scrape(self):
-        # Your scraping logic
-        notifications = []
-        # ... extract and parse
-        return notifications
-```
-
-2. Register in `backend/scrapers/__init__.py`:
-```python
-def get_scraper(url, scraper_type=None):
-    if 'newsite.com' in url:
-        return NewSiteScraper()
-    # ... other scrapers
-```
-
-#### Run Tests
-```bash
-# Backend API tests
+# Backend (Terminal 1)
 cd backend
-python test_all_endpoints.py
+python app.py  # Runs on :5000
 
-# Seed test data
-python seed_test_data.py
+# Frontend (Terminal 2)
+cd frontend
+python -m http.server 3000  # Runs on :3000
 ```
 
----
+5. **Open App**
 
-## 🔌 API Documentation
-
-### Authentication
-
-#### Register User
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "date_of_birth": "2000-01-01",
-  "highest_qualification": "Graduate"
-}
-
-Response: 201 Created
-{
-  "message": "User registered successfully",
-  "user_id": 1
-}
+```
+http://localhost:3000/templates/index.html
 ```
 
-#### Get User
-```http
-GET /api/auth/user/{user_id}
+## 📦 Project Structure
 
-Response: 200 OK
-{
-  "id": 1,
-  "name": "John Doe",
-  "email": "john@example.com",
-  "qualification": "Graduate"
-}
+```
+saspirant/
+├── backend/
+│   ├── routes/          # API endpoints (auth, preferences, dashboard)
+│   ├── services/        # Email, scraping, matching logic
+│   ├── scrapers/        # Site-specific scrapers (UPSC, SSC, universities)
+│   ├── models.py        # Database models
+│   └── app.py           # Flask application
+├── frontend/
+│   ├── templates/       # HTML pages
+│   └── static/          # CSS, JS, images
+└── README.md
 ```
 
-### Preferences
+## 🔑 Key API Endpoints
 
-#### Add/Update Preferences
-```http
-POST /api/preferences/{user_id}
-Content-Type: application/json
-
-{
-  "exam_categories": ["UPSC", "SSC"],
-  "min_age": 21,
-  "max_age": 35,
-  "preferred_locations": ["All India"]
-}
-
-Response: 200 OK
-{
-  "message": "Preferences updated",
-  "preferences": {...}
-}
+```
+POST   /api/auth/register              # Email/password registration
+POST   /api/auth/login                 # Email/password login
+GET    /api/auth/google/login          # Google OAuth login
+POST   /api/preferences/{user_id}      # Save exam preferences
+GET    /api/dashboard/{user_id}/summary # Dashboard data
+POST   /api/dashboard/{user_id}/trigger-scrape/{url_id}  # Manual scrape
 ```
 
-#### Add Monitored URL
-```http
-POST /api/preferences/{user_id}/urls
-Content-Type: application/json
+## 🌐 Deployment
 
-{
-  "url": "https://upsc.gov.in/examinations/active",
-  "website_name": "UPSC Official",
-  "scraper_type": "html"
-}
+**Frontend (Vercel):**
 
-Response: 201 Created
-```
+* Root Directory: `frontend`
+* Build Command: (none - static site)
+* Deploy: Auto-deploys from `main` branch
 
-### Dashboard
+**Backend (Render):**
 
-#### Get Dashboard Summary
-```http
-GET /api/dashboard/{user_id}/summary
+* Root Directory: `backend`
+* Build Command: `pip install -r requirements.txt`
+* Start Command: `gunicorn app:app`
+* Add environment variables in dashboard
 
-Response: 200 OK
-{
-  "user": {...},
-  "stats": {
-    "total_alerts_received": 15,
-    "alerts_this_week": 3,
-    "monitored_urls": 4
-  },
-  "recent_alerts": [...]
-}
-```
+**Database:** Neon PostgreSQL (serverless)
 
-#### Trigger Manual Scrape
-```http
-POST /api/dashboard/{user_id}/trigger-scrape/{url_id}
+## 🔒 Security
 
-Response: 200 OK
-{
-  "message": "Scrape completed",
-  "notifications_found": 5,
-  "new_notifications": 2,
-  "alerts_sent": 1
-}
-```
+* Passwords hashed with Werkzeug (bcrypt)
+* Google OAuth with state validation
+* CORS configured for specific origins
+* Environment variables for all secrets
+* HTTPS in production
 
----
+## 📊 How It Works
 
-## 🚀 Deployment
-
-### Production Deployment (Vercel + PythonAnywhere)
-
-#### Frontend (Vercel)
-1. Push code to GitHub
-2. Import repository in Vercel
-3. Set build settings:
-   - Root Directory: `frontend`
-   - No build command needed (static site)
-4. Deploy
-
-#### Backend (PythonAnywhere)
-1. Create PythonAnywhere account
-2. Upload code or clone from GitHub
-3. Set up virtual environment and install requirements
-4. Configure WSGI file
-5. Set environment variables in dashboard
-6. Initialize database: `flask init-db`
-7. Set up scheduled task for scraping
-
-### Environment-Specific Settings
-
-Production `render.yaml` provided for easy deployment on Render (alternative to PythonAnywhere).
-
----
-
-## 🧪 Testing
-
-### Run All Tests
-```bash
-cd backend
-
-# Test all API endpoints
-python test_all_endpoints.py
-
-# Seed sample data
-python seed_test_data.py
-```
-
-### Manual Testing Checklist
-- [ ] User registration works
-- [ ] Preferences can be set and updated
-- [ ] URLs can be added and removed
-- [ ] Dashboard loads with correct stats
-- [ ] Manual scrape finds notifications
-- [ ] Email alerts are sent (check inbox)
-- [ ] No console errors in browser
-
----
+1. User registers and sets preferences (exam types, age, qualification)
+2. User adds official recruitment website URLs to monitor
+3. APScheduler runs scrapers every 6 hours (configurable)
+4. Scrapers extract job notifications from websites + PDFs
+5. Matching engine filters jobs by user eligibility
+6. SendGrid sends email alerts for matching opportunities
+7. Dashboard displays all alerts and deadlines
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions welcome! Please:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
-### Code Style
-- Follow PEP 8 for Python code
-- Use meaningful variable and function names
-- Add docstrings for all functions
-- Write tests for new features
-
----
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file
 
----
+## 👤 Author
 
-## 👥 Authors
+**Swarnjeet Nath Tiwary**
 
-- **Swarnjeet Nath Tiwary** - *Initial work* - [GitHub Profile](https://github.com/swarn6402)
-
----
+* Portfolio: [swarn6402.vercel.app](https://swarn6402.vercel.app)
+* GitHub: [@swarn6402](https://github.com/swarn6402)
+* LinkedIn: [swarn6402](https://linkedin.com/in/swarn6402)
 
 ## 🙏 Acknowledgments
 
-- Inspired by the needs of millions of competitive exam aspirants in India
-- Thanks to the open-source community for excellent libraries (Flask, BeautifulSoup, etc.)
-- Special thanks to government bodies for maintaining public recruitment portals
+Built for millions of Indian competitive exam aspirants who deserve equal opportunity.
 
 ---
 
-## 📞 Contact
-
-- Email: swarnjeettiwary01@gmail.com
-- Project Link: [https://github.com/swarn6402/saspirant](https://github.com/swarn6402/saspirant)
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Add support for 50+ more exam websites
-- [ ] Mobile app (React Native)
-- [ ] WhatsApp alerts integration
-- [ ] AI-powered eligibility prediction
-- [ ] Community forum for aspirants
-- [ ] Premium features (priority alerts, advanced filtering)
-
----
-
-**Made with ❤️ for aspirants, by aspirants**
-
----
+**⭐ Star this repo if it helped you!**
