@@ -3,7 +3,7 @@ import os
 from datetime import date
 
 import click
-from flask import Flask, jsonify, redirect, request
+from flask import Flask, jsonify, redirect, request, session
 from flask_cors import CORS
 from sqlalchemy import text
 
@@ -11,12 +11,24 @@ from config import get_config
 from models import User, db
 from routes.auth_routes import auth_bp
 from routes.dashboard_routes import dashboard_bp
+from routes.google_auth_routes import google_auth_bp
 from routes.preference_routes import preference_bp
 from services.scheduler_service import SchedulerService
 
 
 def create_app():
     app = Flask(__name__)
+
+    # Secret key for sessions (required for OAuth)
+    app.config["SECRET_KEY"] = os.getenv(
+        "FLASK_SECRET_KEY", "dev-secret-key-for-local-testing"
+    )
+
+    # Session configuration for OAuth
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_SECURE"] = False  # False for local HTTP, True for production HTTPS
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+
     app.config.from_object(get_config())
 
     if os.environ.get("FLASK_ENV") == "production":
@@ -107,6 +119,7 @@ def register_blueprints(app: Flask):
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(preference_bp, url_prefix="/api/preferences")
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(google_auth_bp)
 
 
 def apply_cors(app: Flask):
