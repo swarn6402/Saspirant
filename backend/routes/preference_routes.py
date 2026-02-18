@@ -184,35 +184,63 @@ def get_preferences(user_id):
 @preference_bp.post("/<int:user_id>/urls")
 def add_monitored_url(user_id):
     try:
+        print(f"Received URL add request: {request.json}")
         user = User.query.get(user_id)
         if not user:
             return jsonify({"error": "User not found"}), 404
 
         payload = request.get_json(silent=True) or {}
+        if not isinstance(payload, dict):
+            return jsonify({"error": "Request body must be a valid JSON object"}), 400
+
         url = payload.get("url")
         website_name = payload.get("website_name")
-        scraper_type = payload.get("scraper_type")
+        scraper_type = payload.get("scraper_type", "html")
 
         if not url or not isinstance(url, str):
-            return jsonify({"error": "url is required"}), 400
+            return jsonify({"error": "url is required and must be a string"}), 400
+
+        if not website_name or not isinstance(website_name, str) or not website_name.strip():
+            return jsonify({"error": "website_name is required and must be a non-empty string"}), 400
 
         clean_url = url.strip()
+        parsed = urlparse(clean_url)
+        if parsed.scheme not in {"http", "https"}:
+            return jsonify({"error": "url must start with http:// or https://"}), 400
+        if not parsed.netloc:
+            return jsonify({"error": "url must include a valid domain"}), 400
+
         if not is_valid_url(clean_url):
-            return jsonify({"error": "URL is invalid or not accessible"}), 400
+            return (
+                jsonify(
+                    {
+                        "error": (
+                            "URL is not accessible from the server. "
+                            "Ensure the site is reachable and allows requests."
+                        )
+                    }
+                ),
+                400,
+            )
 
         existing = MonitoredURL.query.filter_by(user_id=user_id, url=clean_url).first()
         if existing:
             return jsonify({"error": "URL already exists for this user"}), 400
 
-        if scraper_type is None:
-            scraper_type = detect_scraper_type(clean_url)
-        elif scraper_type not in ALLOWED_SCRAPER_TYPES:
+        if scraper_type is None or (isinstance(scraper_type, str) and not scraper_type.strip()):
+            scraper_type = "html"
+        elif not isinstance(scraper_type, str):
+            return jsonify({"error": "scraper_type must be a string"}), 400
+        else:
+            scraper_type = scraper_type.strip().lower()
+
+        if scraper_type not in ALLOWED_SCRAPER_TYPES:
             return jsonify({"error": "scraper_type must be one of: html, pdf, dynamic"}), 400
 
         monitored_url = MonitoredURL(
             user_id=user_id,
             url=clean_url,
-            website_name=website_name.strip() if isinstance(website_name, str) else None,
+            website_name=website_name.strip(),
             scraper_type=scraper_type,
         )
         db.session.add(monitored_url)

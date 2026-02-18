@@ -1,5 +1,6 @@
 from datetime import date
 import os
+from urllib.parse import urlencode
 
 from authlib.integrations.requests_client import OAuth2Session
 from flask import Blueprint, current_app, redirect, request, session
@@ -12,6 +13,7 @@ google_auth_bp = Blueprint("google_auth", __name__)
 GOOGLE_AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 
 
 @google_auth_bp.route("/api/auth/google/login", methods=["GET"])
@@ -19,8 +21,7 @@ def google_login():
     """Initiate Google OAuth flow."""
     if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
         current_app.logger.error("Google OAuth credentials are not configured.")
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
-        return redirect(f"{frontend_url}/templates/login.html?error=oauth_not_configured")
+        return redirect(f"{FRONTEND_URL}/login?error=oauth_not_configured")
 
     oauth = OAuth2Session(
         GOOGLE_CLIENT_ID,
@@ -38,8 +39,8 @@ def google_login():
 @google_auth_bp.route("/api/auth/google/callback", methods=["GET"])
 def google_callback():
     """Handle Google OAuth callback."""
-    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
-    login_redirect = f"{frontend_url}/templates/login.html"
+    login_redirect = f"{FRONTEND_URL}/login"
+    dashboard_redirect = f"{FRONTEND_URL}/dashboard"
 
     try:
         # State validation is temporarily disabled for local development.
@@ -83,7 +84,8 @@ def google_callback():
             db.session.commit()
 
         session.pop("oauth_state", None)
-        return redirect(f"{frontend_url}/templates/dashboard.html?user_id={user.id}")
+        query = urlencode({"user_id": user.id})
+        return redirect(f"{dashboard_redirect}?{query}")
     except Exception as exc:
         db.session.rollback()
         current_app.logger.exception("Google OAuth error: %s", exc)
