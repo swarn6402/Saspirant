@@ -51,14 +51,30 @@ def google_callback():
 
         code = request.args.get("code")
         if not code:
+            print("ERROR: No auth code in callback")
             return redirect(f"{login_redirect}?error=no_code")
+
+        if len(code) < 20:
+            print(f"ERROR: Auth code looks malformed: {code}")
+            return redirect(f"{login_redirect}?error=invalid_code")
+
+        print(f"Processing auth code (length: {len(code)})")
 
         oauth = OAuth2Session(
             GOOGLE_CLIENT_ID,
             GOOGLE_CLIENT_SECRET,
             redirect_uri=GOOGLE_REDIRECT_URI,
         )
-        oauth.fetch_token(GOOGLE_TOKEN_URL, code=code)
+        try:
+            print("Fetching token from Google...")
+            token = oauth.fetch_token(GOOGLE_TOKEN_URL, code=code)
+            print("Token received successfully")
+        except Exception as e:
+            error_msg = str(e)
+            print(f"ERROR fetching token: {error_msg}")
+            if "invalid_grant" in error_msg or "Malformed" in error_msg:
+                return redirect(f"{login_redirect}?error=oauth_expired")
+            return redirect(f"{login_redirect}?error=oauth_failed")
 
         resp = oauth.get(GOOGLE_USERINFO_URL)
         user_info = resp.json()

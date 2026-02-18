@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -6,8 +6,12 @@ export default function AuthCallback() {
     const [searchParams] = useSearchParams();
     const { login } = useAuth();
     const navigate = useNavigate();
+    const handled = useRef(false);
 
     useEffect(() => {
+        if (handled.current) return;
+        handled.current = true;
+
         const userId = searchParams.get('user_id');
         const name = searchParams.get('name');
         const email = searchParams.get('email');
@@ -15,7 +19,7 @@ export default function AuthCallback() {
 
         if (error) {
             console.error('OAuth error:', error);
-            navigate('/login?error=' + error);
+            navigate('/login?error=' + error, { replace: true });
             return;
         }
 
@@ -25,11 +29,11 @@ export default function AuthCallback() {
                 name: name,
                 email: email
             });
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
         } else {
-            navigate('/login?error=oauth_failed');
+            navigate('/login?error=oauth_failed', { replace: true });
         }
-    }, [searchParams, login, navigate]);
+    }, []);
 
     return (
         <div className="min-h-screen flex items-center justify-center">
