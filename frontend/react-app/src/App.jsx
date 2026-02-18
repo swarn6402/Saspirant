@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import { Analytics } from "@vercel/analytics/react";
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -42,6 +43,7 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Analytics />
       </Router>
     </AuthProvider>
   );
