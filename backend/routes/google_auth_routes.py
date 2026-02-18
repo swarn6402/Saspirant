@@ -40,6 +40,7 @@ def google_login():
 def google_callback():
     """Handle Google OAuth callback."""
     login_redirect = f"{FRONTEND_URL}/login"
+    dashboard_redirect = f"{FRONTEND_URL}/dashboard"
 
     try:
         # State validation is temporarily disabled for local development.
@@ -83,14 +84,8 @@ def google_callback():
             db.session.commit()
 
         session.pop("oauth_state", None)
-        query = urlencode(
-            {
-                "user_id": user.id,
-                "name": user.name,
-                "email": user.email,
-            }
-        )
-        return redirect(f"{FRONTEND_URL}/auth/callback?{query}")
+        query = urlencode({"user_id": user.id})
+        return redirect(f"{dashboard_redirect}?{query}")
     except Exception as exc:
         db.session.rollback()
         current_app.logger.exception("Google OAuth error: %s", exc)
