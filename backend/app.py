@@ -127,14 +127,23 @@ def apply_cors(app: Flask):
     allowed_origins = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
         "https://saspirant.vercel.app",
     ]
-    CORS(
-        app,
-        resources={r"/*": {"origins": allowed_origins}},
-        supports_credentials=True,
-        allow_headers=["Content-Type", "Authorization", "X-User-Id"],
-        methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    CORS(app,
+         resources={r"/*": {
+             "origins": [
+                 "http://localhost:3000",
+                 "http://127.0.0.1:3000",
+                 "http://localhost:5173",
+                 "http://127.0.0.1:5173",
+                 "https://saspirant.vercel.app"
+             ]
+         }},
+         supports_credentials=True,
+         allow_headers=["Content-Type", "Authorization", "X-User-Id"],
+         methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
     )
 
     @app.after_request
