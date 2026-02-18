@@ -1,34 +1,39 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function AuthCallback() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const handled = useRef(false);
+    const [searchParams] = useSearchParams();
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    if (handled.current) return;
-    handled.current = true;
+    useEffect(() => {
+        const userId = searchParams.get('user_id');
+        const name = searchParams.get('name');
+        const email = searchParams.get('email');
+        const error = searchParams.get('error');
 
-    const params = new URLSearchParams(window.location.search);
-    const user_id = params.get('user_id');
-    const name = params.get('name');
-    const email = params.get('email');
-    const error = params.get('error');
+        if (error) {
+            console.error('OAuth error:', error);
+            navigate('/login?error=' + error);
+            return;
+        }
 
-    if (error || !user_id || !name) {
-      navigate('/login', { replace: true });
-      return;
-    }
+        if (userId && name && email) {
+            login({
+                user_id: userId,
+                name: name,
+                email: email
+            });
+            navigate('/dashboard');
+        } else {
+            navigate('/login?error=oauth_failed');
+        }
+    }, [searchParams, login, navigate]);
 
-    login({ user_id, name, email });
-    navigate('/dashboard', { replace: true });
-  }, []);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-    </div>
-  );
+    return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+    );
 }
