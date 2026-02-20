@@ -86,7 +86,7 @@ export default function Preferences() {
         setCategories(newCategories);
 
         if (!categories.includes(category) && DEFAULT_URLS[category]) {
-            const urlExists = urls.some(u => u.url === DEFAULT_URLS[category].url);
+            const urlExists = Array.isArray(urls) && urls.some(u => u.url === DEFAULT_URLS[category].url);
             if (!urlExists) {
                 addDefaultUrl(category);
             }
