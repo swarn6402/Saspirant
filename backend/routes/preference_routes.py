@@ -210,19 +210,6 @@ def add_monitored_url(user_id):
         if not parsed.netloc:
             return jsonify({"error": "url must include a valid domain"}), 400
 
-        if not is_valid_url(clean_url):
-            return (
-                jsonify(
-                    {
-                        "error": (
-                            "URL is not accessible from the server. "
-                            "Ensure the site is reachable and allows requests."
-                        )
-                    }
-                ),
-                400,
-            )
-
         existing = MonitoredURL.query.filter_by(user_id=user_id, url=clean_url).first()
         if existing:
             return jsonify({"error": "URL already exists for this user"}), 400
