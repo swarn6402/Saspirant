@@ -16,6 +16,14 @@ export default function Preferences() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
+    const DEFAULT_URLS = {
+        UPSC: { url: 'https://upsc.gov.in/examinations/active', name: 'UPSC Official - Active Exams' },
+        SSC: { url: 'https://ssc.gov.in/', name: 'SSC Official Website' },
+        Banking: { url: 'https://www.ibps.in/', name: 'IBPS - Banking Exams' },
+        Railways: { url: 'https://rrbonlinereg.co.in/', name: 'RRB Official' },
+        University: { url: 'https://www.ugc.gov.in/', name: 'UGC - University Grants' }
+    };
+
     const examCategories = ['UPSC', 'SSC', 'Banking', 'Railways', 'State PSC', 'University', 'Defence', 'Teaching', 'Medical', 'Engineering'];
 
     useEffect(() => {
@@ -47,12 +55,42 @@ export default function Preferences() {
         }
     };
 
+    const addDefaultUrl = async (category) => {
+        const defaultUrl = DEFAULT_URLS[category];
+        if (!defaultUrl) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/preferences/${user.id}/urls`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: defaultUrl.url,
+                    website_name: defaultUrl.name,
+                    scraper_type: 'html'
+                })
+            });
+
+            if (response.ok) {
+                fetchUrls();
+            }
+        } catch (err) {
+            console.error('Error adding default URL:', err);
+        }
+    };
+
     const handleCategoryToggle = (category) => {
-        setCategories(prev =>
-            prev.includes(category)
-                ? prev.filter(c => c !== category)
-                : [...prev, category]
-        );
+        const newCategories = categories.includes(category)
+            ? categories.filter(c => c !== category)
+            : [...categories, category];
+
+        setCategories(newCategories);
+
+        if (!categories.includes(category) && DEFAULT_URLS[category]) {
+            const urlExists = urls.some(u => u.url === DEFAULT_URLS[category].url);
+            if (!urlExists) {
+                addDefaultUrl(category);
+            }
+        }
     };
 
     const handleAddUrl = async (e) => {
